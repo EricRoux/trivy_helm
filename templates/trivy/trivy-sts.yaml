@@ -4,6 +4,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: {{ template "trivy.name" . }}
+  namespace: {{ .Values.namespace }}
   labels:
 {{ include "trivy.labels" . | indent 4 }}
     component: trivy
@@ -29,6 +30,10 @@ spec:
       securityContext:
         runAsUser: 10000
         fsGroup: 10000
+      hostAliases:
+      - ip: {{ .Values.reverseProxy.service.clusterIP }}
+        hostnames: 
+        - "github.com"      
       containers:
         - name: trivy
           image: {{ .Values.trivy.image.repository -}} : {{- .Values.trivy.image.tag }}
@@ -83,14 +88,14 @@ spec:
                   key: redisURL
           ports:
             - name: api-server
-              containerPort: {{- .Values.trivy.service.port -}}
+              containerPort: {{ .Values.trivy.service.port }}
           volumeMounts:
           - name: data
             mountPath: /home/scanner/.cache
             readOnly: false
           livenessProbe:
             httpGet:
-              scheme: "http"
+              scheme: HTTP
               path: /probe/healthy
               port: api-server
             initialDelaySeconds: 5
@@ -99,7 +104,7 @@ spec:
             failureThreshold: 10
           readinessProbe:
             httpGet:
-              scheme: "http"
+              scheme: HTTP
               path: /probe/ready
               port: api-server
             initialDelaySeconds: 5

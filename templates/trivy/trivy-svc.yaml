@@ -3,13 +3,14 @@ apiVersion: v1
 kind: Service
 metadata:
   name: "{{ template "trivy.name" . }}"
+  namespace: {{ .Values.namespace }}
   labels:
 {{ include "trivy.labels" . | indent 4 }}
 spec:
   ports:
-    - name: {{- .Values.trivy.service.name -}}
-      protocol: {{- .Values.trivy.service.protocol -}}
-      port: {{- .Values.trivy.service.port -}}
+    - name: {{ .Values.trivy.service.name }}
+      protocol: {{ .Values.trivy.service.protocol }}
+      port: {{ .Values.trivy.service.port }}
   selector:
 {{ include "trivy.matchLabels" . | indent 4 }}
     component: trivy

@@ -27,10 +27,6 @@ app: "{{ template "trivy.name" . }}"
   {{- printf "%s" (include "trivy.fullname" .) -}}
 {{- end -}}
 
-{{- define "trivy.redis" -}}
-  {{- printf "%s-redis" (include "trivy.fullname" .) -}}
-{{- end -}}
-
 {{- define "trivy.redis.addr" -}}
   {{- with .Values.redis }}
     {{- printf "%s:6379" (include "trivy.redis" $ ) }}

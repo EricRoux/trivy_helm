@@ -1,37 +1,30 @@
-
 ---
 apiVersion: apps/v1
-kind: 
+kind: Deployment
 metadata:
-  name: {{- .Values.reverseProxy.name -}}
-  namespace: {{- .Values.namespace -}}
+  name: {{ .Values.reverseProxy.name }}
+  namespace: {{ .Values.namespace }}
   labels:
-    app: {{- .Values.reverseProxy.name -}} - {{- .Values.nameOverride -}}
+    app: {{ .Values.reverseProxy.name -}} - {{- .Values.nameOverride }}
 spec:
-  replicas: {{- .Values.reverseProxy.replicas -}}
+  replicas: {{ .Values.reverseProxy.replicas }}
   selector:
     matchLabels:
-      app: {{- .Values.reverseProxy.name -}}
+{{ include "trivy.matchLabels" . | indent 6 }}
+      component: {{ .Values.reverseProxy.name }}
   template:
     metadata:
       labels:
-        app: {{- .Values.reverseProxy.name -}}
+{{ include "trivy.labels" . | indent 8 }}
+        component: {{ .Values.reverseProxy.name }}
     spec:
       containers:
-      - name: {{- .Values.reverseProxy.name -}}
-        image: {{- .Values.reverseProxy.image.repository -}} : {{- .Values.reverseProxy.image.tag -}}
-        pullPolicy: {{- .Values.all.image.pullPolicy -}}
+      - name: {{ .Values.reverseProxy.name }}
+        image: {{ .Values.reverseProxy.image.repository -}} : {{- .Values.reverseProxy.image.tag }}
+        imagePullPolicy: {{ .Values.all.image.pullPolicy }}
         ports:
-        - containerPort:  {{- .Values.reverseProxy.port -}}
-          protocol: {{- .Values.reverseProxy.protocol -}}
+        - containerPort:  {{ .Values.reverseProxy.port }}
+          protocol: {{ .Values.reverseProxy.protocol }}
         env:
         - name: TZ
-          value: {{- .Values.environments.timeZone -}}
-
-# spec:
-#   template:
-#     spec:
-#       hostAliases:
-#       - ip: 10.43.114.232
-#         hostnames: 
-#         - "github.com"
+          value: {{ .Values.environments.timeZone }}

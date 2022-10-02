@@ -4,6 +4,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: {{ template "trivy.redis" . }}
+  namespace: {{ .Values.namespace }}
   labels:
 {{ include "trivy.labels" . | indent 4 }}
     component: redis
