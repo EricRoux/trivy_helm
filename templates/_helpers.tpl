@@ -11,6 +11,9 @@
 {{- end }}
 {{- end }}
 
+{{- define "trivy.redis" -}}
+  {{- printf "%s-redis" (include "trivy.fullname" .) -}}
+{{- end -}}
 
 {{- define "trivy.labels" -}}
 heritage: {{ .Release.Service }}

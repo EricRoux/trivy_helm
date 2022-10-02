@@ -8,7 +8,7 @@ metadata:
   labels:
     app: {{- .Values.reverseProxy.name -}} - {{- .Values.nameOverride -}}
 spec:
-  replicas: {{- .Values.reverseProxy.replicaCount -}}
+  replicas: {{- .Values.reverseProxy.replicas -}}
   selector:
     matchLabels:
       app: {{- .Values.reverseProxy.name -}}
@@ -20,7 +20,7 @@ spec:
       containers:
       - name: {{- .Values.reverseProxy.name -}}
         image: {{- .Values.reverseProxy.image.repository -}} : {{- .Values.reverseProxy.image.tag -}}
-        pullPolicy: {{- .Values.reverseProxy.image.pullPolicy -}}
+        pullPolicy: {{- .Values.all.image.pullPolicy -}}
         ports:
         - containerPort:  {{- .Values.reverseProxy.port -}}
           protocol: {{- .Values.reverseProxy.protocol -}}
