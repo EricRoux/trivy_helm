@@ -1,0 +1,37 @@
+
+---
+apiVersion: apps/v1
+kind: 
+metadata:
+  name: {{- .Values.reverseProxy.name -}}
+  namespace: {{- .Values.namespace -}}
+  labels:
+    app: {{- .Values.reverseProxy.name -}} - {{- .Values.nameOverride -}}
+spec:
+  replicas: {{- .Values.reverseProxy.replicaCount -}}
+  selector:
+    matchLabels:
+      app: {{- .Values.reverseProxy.name -}}
+  template:
+    metadata:
+      labels:
+        app: {{- .Values.reverseProxy.name -}}
+    spec:
+      containers:
+      - name: {{- .Values.reverseProxy.name -}}
+        image: {{- .Values.reverseProxy.image.repository -}} : {{- .Values.reverseProxy.image.tag -}}
+        pullPolicy: {{- .Values.reverseProxy.image.pullPolicy -}}
+        ports:
+        - containerPort:  {{- .Values.reverseProxy.port -}}
+          protocol: {{- .Values.reverseProxy.protocol -}}
+        env:
+        - name: TZ
+          value: {{- .Values.environments.timeZone -}}
+
+# spec:
+#   template:
+#     spec:
+#       hostAliases:
+#       - ip: 10.43.114.232
+#         hostnames: 
+#         - "github.com"

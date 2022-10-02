@@ -1,0 +1,121 @@
+{{- if .Values.trivy.enabled }}
+{{- $trivy := .Values.persistence.persistentVolumeClaim.trivy }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ template "trivy.name" . }}
+  labels:
+{{ include "trivy.labels" . | indent 4 }}
+    component: trivy
+spec:
+  replicas: {{ .Values.trivy.replicas }}
+  serviceName: {{  template "trivy.name" . }}
+  selector:
+    matchLabels:
+{{ include "trivy.matchLabels" . | indent 6 }}
+      component: trivy
+  template:
+    metadata:
+      labels:
+{{ include "trivy.labels" . | indent 8 }}
+        component: trivy
+      annotations:
+        checksum/secret: {{ include (print $.Template.BasePath "/trivy/trivy-secret.yaml") . | sha256sum }}
+    spec:
+{{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+{{- end }}
+      securityContext:
+        runAsUser: 10000
+        fsGroup: 10000
+      containers:
+        - name: trivy
+          image: {{ .Values.trivy.image.repository -}} : {{- .Values.trivy.image.tag }}
+          imagePullPolicy: {{ .Values.trivy.image.pullPolicy }}
+          securityContext:
+            privileged: false
+            allowPrivilegeEscalation: false
+          env:
+            - name: "SCANNER_LOG_LEVEL"
+              value: {{ .Values.all.logLevel | quote }}
+            - name: "SCANNER_TRIVY_CACHE_DIR"
+              value: "/home/scanner/.cache/trivy"
+            - name: "SCANNER_TRIVY_REPORTS_DIR"
+              value: "/home/scanner/.cache/reports"
+            - name: "SCANNER_TRIVY_DEBUG_MODE"
+              value: {{ .Values.trivy.debugMode | quote }}
+            - name: "SCANNER_TRIVY_VULN_TYPE"
+              value: {{ .Values.trivy.vulnType | quote }}
+            - name: "SCANNER_TRIVY_TIMEOUT"
+              value: {{ .Values.trivy.timeout | quote }}
+            - name: "SCANNER_TRIVY_GITHUB_TOKEN"
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "trivy.name" . }}
+                  key: gitHubToken
+            - name: "SCANNER_TRIVY_SEVERITY"
+              value: {{ .Values.trivy.severity | quote }}
+            - name: "SCANNER_TRIVY_IGNORE_UNFIXED"
+              value: {{ .Values.trivy.ignoreUnfixed | default false | quote }}
+            - name: "SCANNER_TRIVY_SKIP_UPDATE"
+              value: {{ .Values.trivy.skipUpdate | default false | quote }}
+            - name: "SCANNER_TRIVY_OFFLINE_SCAN"
+              value: {{ .Values.trivy.offlineScan | default false | quote }}
+            - name: "SCANNER_TRIVY_INSECURE"
+              value: {{ .Values.trivy.insecure | default false | quote }}
+            - name: SCANNER_API_SERVER_ADDR
+              value: ":{{- .Values.trivy.service.port -}}"
+            - name: "SCANNER_REDIS_URL"
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "trivy.name" . }}
+                  key: redisURL
+            - name: "SCANNER_STORE_REDIS_URL"
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "trivy.name" . }}
+                  key: redisURL
+            - name: "SCANNER_JOB_QUEUE_REDIS_URL"
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "trivy.name" . }}
+                  key: redisURL
+          ports:
+            - name: api-server
+              containerPort: {{- .Values.trivy.service.port -}}
+          volumeMounts:
+          - name: data
+            mountPath: /home/scanner/.cache
+            readOnly: false
+          livenessProbe:
+            httpGet:
+              scheme: "http"
+              path: /probe/healthy
+              port: api-server
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 10
+          readinessProbe:
+            httpGet:
+              scheme: "http"
+              path: /probe/ready
+              port: api-server
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          resources:
+{{ toYaml .Values.trivy.resources | indent 12 }}
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+      labels:
+{{ include "trivy.labels" . | indent 8 }}
+    spec:
+      accessModes: [{{ $trivy.accessMode | quote }}]
+      resources:
+        requests:
+          storage: {{ $trivy.size | quote }}
+{{- end }}
