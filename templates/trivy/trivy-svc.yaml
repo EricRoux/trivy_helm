@@ -7,10 +7,12 @@ metadata:
   labels:
 {{ include "trivy.labels" . | indent 4 }}
 spec:
+  type: {{ .Values.trivy.service.type }}
   ports:
     - name: {{ .Values.trivy.service.name }}
       protocol: {{ .Values.trivy.service.protocol }}
       port: {{ .Values.trivy.service.port }}
+      nodePort: {{ .Values.trivy.service.nodePort }}
   selector:
 {{ include "trivy.matchLabels" . | indent 4 }}
     component: trivy
