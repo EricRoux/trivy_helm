@@ -1,0 +1,28 @@
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: {{ .Values.reverseProxy.name }}-cm
+  namespace: {{ .Values.namespace }}
+data:
+  default.conf: | 
+    server {
+      listen       80;
+      server_name  {{ .Values.reverseProxy.configMap.server_name }};
+
+      location / {
+          proxy_pass "{{ .Values.reverseProxy.configMap.url }}";
+          proxy_set_header Host "{{ .Values.reverseProxy.configMap.host }}";
+      }
+
+      location /health {
+        alias  /usr/share/nginx/html;
+        index  index.html index.htm;
+        access_log off;
+      }
+
+      error_page   500 502 503 504  /50x.html;
+      location = /50x.html {
+          root   /usr/share/nginx/html;
+      }
+    }

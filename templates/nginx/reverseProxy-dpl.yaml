@@ -22,9 +22,34 @@ spec:
       - name: {{ .Values.reverseProxy.name }}
         image: {{ .Values.reverseProxy.image.repository -}} : {{- .Values.reverseProxy.image.tag }}
         imagePullPolicy: {{ .Values.all.image.pullPolicy }}
+        livenessProbe:
+          httpGet:
+            scheme: {{ .Values.reverseProxy.probe.protocol }}
+            path: {{ .Values.reverseProxy.probe.health }}
+            port: {{ .Values.reverseProxy.port }}
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          successThreshold: 1
+          failureThreshold: 10
+        readinessProbe:
+          httpGet:
+            scheme: {{ .Values.reverseProxy.probe.protocol }}
+            path: {{ .Values.reverseProxy.probe.health }}
+            port: {{ .Values.reverseProxy.port }}
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          successThreshold: 1
+          failureThreshold: 3
         ports:
         - containerPort:  {{ .Values.reverseProxy.port }}
           protocol: {{ .Values.reverseProxy.protocol }}
         env:
         - name: TZ
           value: {{ .Values.environments.timeZone }}
+        volumeMounts:
+          - name: conf
+            mountPath: /etc/nginx/conf.d/
+      volumes:
+        - name: conf
+          configMap:
+            name: {{ .Values.reverseProxy.name }}-cm
