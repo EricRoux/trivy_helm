@@ -1,0 +1,80 @@
+namespace: trivy
+nameOverride: trivy
+imagePullSecrets:
+environments:
+  timeZone: "Europe/Moscow"
+
+all:
+  image: 
+    pullPolicy: IfNotPresent
+  logLevel: info
+
+reverseProxy:
+  name: nginx
+  replicas: 1
+  port: 80
+  protocol: TCP
+  configMap:
+    server_name: github.com
+    host: nexus.local
+    url: https://nexus.local/nexus/repository/temp-repo/
+  probe:
+    protocol: HTTP
+    health: /health/
+  image:
+    repository: nginx
+    tag: 1.12-alpine
+  service:
+    name: nginx
+    port: 80
+    protocol: TCP
+    clusterIP: 10.233.14.232
+
+
+trivy:
+  enabled: true
+  image:
+    repository: goharbor/trivy-adapter-photon
+    tag: v2.6.0
+  replicas: 1
+  debugMode: false
+  vulnType: "os,library"
+  severity: "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL"
+  ignoreUnfixed: false
+  insecure: false
+  gitHubToken: ""
+  skipUpdate: false
+  offlineScan: true
+  timeout: 5m0s
+  resources:
+    requests:
+      cpu: 200m
+      memory: 512Mi
+    limits:
+      cpu: 1
+      memory: 1Gi
+  service:
+    type: NodePort
+    name: http-trivy
+    port: 8080
+    protocol: TCP
+    nodePort: 30409
+    
+
+redis:
+  type: internal
+  internal:
+    automountServiceAccountToken: false
+    image:
+      repository: goharbor/redis-photon
+      tag: v2.6.0
+
+persistence:
+  enabled: true
+  persistentVolumeClaim:
+    redis:
+      accessMode: ReadWriteOnce
+      size: 1Gi
+    trivy:
+      accessMode: ReadWriteOnce
+      size: 5Gi
