@@ -12,7 +12,9 @@ spec:
     - name: {{ .Values.trivy.service.name }}
       protocol: {{ .Values.trivy.service.protocol }}
       port: {{ .Values.trivy.service.port }}
+      {{- if eq .Values.trivy.service.type "NodePort" }}
       nodePort: {{ .Values.trivy.service.nodePort }}
+      {{- end }}
   selector:
 {{ include "trivy.matchLabels" . | indent 4 }}
     component: trivy
