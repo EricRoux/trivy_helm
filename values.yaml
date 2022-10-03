@@ -28,7 +28,7 @@ reverseProxy:
     name: nginx
     port: 80
     protocol: TCP
-    clusterIP: 10.43.14.232
+    # clusterIP: 10.43.14.232
 
 
 trivy:
@@ -36,6 +36,9 @@ trivy:
   image:
     repository: goharbor/trivy-adapter-photon
     tag: v2.6.0
+  initContainers:
+    repository: praqma/network-multitool
+    tag: c3d4e04
   replicas: 1
   debugMode: false
   vulnType: "os,library"

@@ -29,12 +29,28 @@ spec:
       securityContext:
         runAsUser: 10000
         fsGroup: 10000
+      {{- if .Values.reverseProxy.service.clusterIP }}
       hostAliases:
       - ip: {{ .Values.reverseProxy.service.clusterIP }}
         hostnames: 
-        - "github.com"      
+        - "{{- .Values.reverseProxy.configMap.server_name -}}"
+      {{- else }}
+      initContainers: 
+      - name: resolve-service-ip
+        image: {{ .Values.trivy.initContainers.repository -}} : {{- .Values.trivy.initContainers.tag }}
+        command: ['sh', '-c', 'for i in {1..3}; do sleep 1; \
+        if host $REVERSE_PROXY_SRV;  \
+        then echo \"$(host $REVERSE_PROXY_SRV | awk -F ' ' '{ print $NF}')   $REVERSE_HOST \" > /mnt/hosts; \
+        exit 0; \
+        fi; done; exit 1']
+        env:
+          - name: REVERSE_PROXY_SRV
+            value: {{ .Values.reverseProxy.service.name }}-srv
+          - name: REVERSE_HOST
+            value: {{ .Values.reverseProxy.configMap.server_name }}
+      {{- end }}
       containers:
-        - name: trivy
+        - name: trivy          
           image: {{ .Values.trivy.image.repository -}} : {{- .Values.trivy.image.tag }}
           imagePullPolicy: {{ .Values.all.image.pullPolicy }}
           securityContext:
