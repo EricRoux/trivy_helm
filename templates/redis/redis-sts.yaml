@@ -44,17 +44,4 @@ spec:
         resources:
 {{ toYaml .Values.redis.internal.resources | indent 10 }}
 {{- end }}
-        volumeMounts:
-        - name: data
-          mountPath: /var/lib/redis
-  volumeClaimTemplates:
-  - metadata:
-      name: data
-      labels:
-{{ include "trivy.labels" . | indent 8 }}
-    spec:
-      accessModes: [{{ $redis.accessMode | quote }}]
-      resources:
-        requests:
-          storage: {{ $redis.size | quote }}
 {{- end -}}

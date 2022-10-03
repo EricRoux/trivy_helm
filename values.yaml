@@ -28,7 +28,7 @@ reverseProxy:
     name: nginx
     port: 80
     protocol: TCP
-    clusterIP: 10.233.14.232
+    clusterIP: 10.43.14.232
 
 
 trivy:
@@ -70,11 +70,11 @@ redis:
       tag: v2.6.0
 
 persistence:
-  enabled: true
-  persistentVolumeClaim:
-    redis:
-      accessMode: ReadWriteOnce
-      size: 1Gi
-    trivy:
-      accessMode: ReadWriteOnce
-      size: 5Gi
+  enabled: false
+  # persistentVolumeClaim:
+  #   redis:
+  #     accessMode: ReadWriteOnce
+  #     size: 1Gi
+  #   trivy:
+  #     accessMode: ReadWriteOnce
+  #     size: 5Gi
