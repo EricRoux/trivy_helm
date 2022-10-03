@@ -1,5 +1,4 @@
 {{- if eq .Values.redis.type "internal" -}}
-{{- $redis := .Values.persistence.persistentVolumeClaim.redis -}}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:

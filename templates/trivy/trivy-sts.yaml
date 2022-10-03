@@ -1,5 +1,4 @@
 {{- if .Values.trivy.enabled }}
-{{- $trivy := .Values.persistence.persistentVolumeClaim.trivy }}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:

@@ -16,8 +16,8 @@ reverseProxy:
   protocol: TCP
   configMap:
     server_name: github.com
-    host: nexus.local
-    url: https://nexus.local/nexus/repository/temp-repo/
+    host: github.com
+    url: https://github.com/nexus/repository/temp-repo/
   probe:
     protocol: HTTP
     health: /health/
