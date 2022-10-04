@@ -10,7 +10,7 @@ all:
   logLevel: info
 
 reverseProxy:
-  name: nginx
+  name: trivy-nginx
   replicas: 1
   port: 80
   protocol: TCP
@@ -25,7 +25,7 @@ reverseProxy:
     repository: nginx
     tag: 1.12-alpine
   service:
-    name: nginx
+    name: trivy-nginx-srv
     port: 80
     protocol: TCP
     # clusterIP: 10.43.14.232
