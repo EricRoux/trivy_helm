@@ -49,7 +49,16 @@ spec:
         volumeMounts:
           - name: conf
             mountPath: /etc/nginx/conf.d/
+          {{- if .Values.ttl.enabled }}
+          - name: ssl
+            mountPath: /etc/nginx/conf.d/ssl/
+          {{- end }}
       volumes:
         - name: conf
           configMap:
             name: {{ .Values.reverseProxy.name }}-cm
+        {{- if .Values.ttl.enabled }}
+        - name: ssl
+          configMap:
+            name: {{ .Values.reverseProxy.name }}-ssl-cm
+        {{- end -}}

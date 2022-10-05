@@ -7,9 +7,19 @@ metadata:
 data:
   default.conf: | 
     server {
-      listen       80;
+      {{- if .Values.ttl.enabled }}
+      listen       {{ .Values.reverseProxy.port }} ssl;
       server_name  {{ .Values.reverseProxy.configMap.server_name }};
-
+      
+      ssl_certificate /etc/nginx/conf.d/ssl/cert.crt;                                                 
+      ssl_certificate_key /etc/nginx/conf.d/ssl/cert_key.key;                                             
+      ssl_protocols TLSv1 TLSv1.1 TLSv1.2;                                                                                                                                  
+      ssl_prefer_server_ciphers on; 
+      
+      {{ else }}
+      listen       {{ .Values.reverseProxy.port }};
+      server_name  {{ .Values.reverseProxy.configMap.server_name }};
+      {{ end }}
       location / {
           proxy_pass "{{ .Values.reverseProxy.configMap.url }}";
           proxy_set_header Host "{{ .Values.reverseProxy.configMap.host }}";

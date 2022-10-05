@@ -4,6 +4,9 @@ imagePullSecrets:
 environments:
   timeZone: "Europe/Moscow"
 
+ttl:
+  enabled: false
+
 all:
   image: 
     pullPolicy: IfNotPresent
