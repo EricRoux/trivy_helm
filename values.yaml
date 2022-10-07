@@ -40,9 +40,6 @@ trivy:
   image:
     repository: goharbor/trivy-adapter-photon
     tag: v2.6.0
-  initContainers:
-    repository: praqma/network-multitool
-    tag: c3d4e04
   replicas: 1
   resources:
     requests:
