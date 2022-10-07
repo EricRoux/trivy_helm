@@ -4,34 +4,35 @@ imagePullSecrets:
 environments:
   timeZone: "Europe/Moscow"
 
-ttl:
-  enabled: false
-
 all:
   image: 
     pullPolicy: IfNotPresent
-  logLevel: info
 
-reverseProxy:
-  name: trivy-nginx
-  replicas: 1
-  port: 80
-  protocol: TCP
-  configMap:
-    server_name: github.com
-    host: github.com
-    url: https://github.com/nexus/repository/temp-repo/
-  probe:
-    protocol: HTTP
-    health: /health/
-  image:
-    repository: nginx
-    tag: 1.12-alpine
-  service:
-    name: trivy-nginx-srv
-    port: 80
-    protocol: TCP
-    # clusterIP: 10.43.14.232
+config:
+  - name: "SCANNER_LOG_LEVEL"
+    value: "info"
+  - name: "SCANNER_TRIVY_CACHE_DIR"
+    value: "/home/scanner/.cache/trivy"
+  - name: "SCANNER_TRIVY_REPORTS_DIR"
+    value: "/home/scanner/.cache/reports"
+  - name: "SCANNER_TRIVY_DEBUG_MODE"
+    value: false
+  - name: "SCANNER_TRIVY_VULN_TYPE"
+    value: "os,library"
+  - name: "SCANNER_TRIVY_TIMEOUT"
+    value: "5m0s"
+  - name: "SCANNER_TRIVY_SEVERITY"
+    value: "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL"
+  - name: "SCANNER_TRIVY_IGNORE_UNFIXED"
+    value: false
+  - name: "SCANNER_TRIVY_SKIP_UPDATE"
+    value: false
+  - name: "SCANNER_TRIVY_OFFLINE_SCAN"
+    value: true
+  - name: "SCANNER_TRIVY_INSECURE"
+    value: false
+  - name: "SCANNER_TRIVY_REPO"
+    value: "ghcr.io/aquasecurity/trivy-db"
 
 
 trivy:
@@ -43,15 +44,6 @@ trivy:
     repository: praqma/network-multitool
     tag: c3d4e04
   replicas: 1
-  debugMode: false
-  vulnType: "os,library"
-  severity: "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL"
-  ignoreUnfixed: false
-  insecure: false
-  gitHubToken: ""
-  skipUpdate: false
-  offlineScan: true
-  timeout: 5m0s
   resources:
     requests:
       cpu: 200m

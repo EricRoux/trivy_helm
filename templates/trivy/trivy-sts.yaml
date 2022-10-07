@@ -26,78 +26,18 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
 {{- end }}
-      {{- if .Values.reverseProxy.service.clusterIP }}
       securityContext:
         runAsUser: 10000
         fsGroup: 10000
-      hostAliases:
-      - ip: {{ .Values.reverseProxy.service.clusterIP }}
-        hostnames: 
-        - "{{- .Values.reverseProxy.configMap.server_name -}}"
-      {{- else }}
-      securityContext:
-        runAsUser: 0
-        fsGroup: 0
-      initContainers: 
-        - name: resolve-service-ip
-          image: {{ .Values.trivy.initContainers.repository -}} : {{- .Values.trivy.initContainers.tag }}
-          command: ['sh', '-c', "for i in {1..100}; do sleep 1; \
-          if host $REVERSE_PROXY_SRV;  \
-          then echo \"$(host $REVERSE_PROXY_SRV | awk -F ' ' '{ print $NF}')   $REVERSE_HOST \" > /mnt/tmp/hosts && \
-          exit 0; \
-          fi; done; exit 1"]
-          env:
-            - name: REVERSE_PROXY_SRV
-              value: {{ .Values.reverseProxy.service.name }}
-            - name: REVERSE_HOST
-              value: {{ .Values.reverseProxy.configMap.server_name }}
-          volumeMounts:
-            - mountPath: /mnt/tmp/
-              name: hosts
-      {{- end }}
       containers:
         - name: trivy          
           image: {{ .Values.trivy.image.repository -}} : {{- .Values.trivy.image.tag }}
-          {{- if not .Values.reverseProxy.service.clusterIP }}
-          lifecycle:
-            postStart:
-              exec:
-                command: ['sh', '-c', 'cat /mnt/tmp/hosts >> /etc/hosts']
-          {{- end }}
           imagePullPolicy: {{ .Values.all.image.pullPolicy }}
           securityContext:
             privileged: false
             allowPrivilegeEscalation: false
           env:
-            - name: "SCANNER_LOG_LEVEL"
-              value: {{ .Values.all.logLevel | quote }}
-            - name: "SCANNER_TRIVY_CACHE_DIR"
-              value: "/home/scanner/.cache/trivy"
-            - name: "SCANNER_TRIVY_REPORTS_DIR"
-              value: "/home/scanner/.cache/reports"
-            - name: "SCANNER_TRIVY_DEBUG_MODE"
-              value: {{ .Values.trivy.debugMode | quote }}
-            - name: "SCANNER_TRIVY_VULN_TYPE"
-              value: {{ .Values.trivy.vulnType | quote }}
-            - name: "SCANNER_TRIVY_TIMEOUT"
-              value: {{ .Values.trivy.timeout | quote }}
-            - name: "SCANNER_TRIVY_GITHUB_TOKEN"
-              valueFrom:
-                secretKeyRef:
-                  name: {{ template "trivy.name" . }}
-                  key: gitHubToken
-            - name: "SCANNER_TRIVY_SEVERITY"
-              value: {{ .Values.trivy.severity | quote }}
-            - name: "SCANNER_TRIVY_IGNORE_UNFIXED"
-              value: {{ .Values.trivy.ignoreUnfixed | default false | quote }}
-            - name: "SCANNER_TRIVY_SKIP_UPDATE"
-              value: {{ .Values.trivy.skipUpdate | default false | quote }}
-            - name: "SCANNER_TRIVY_OFFLINE_SCAN"
-              value: {{ .Values.trivy.offlineScan | default false | quote }}
-            - name: "SCANNER_TRIVY_INSECURE"
-              value: {{ .Values.trivy.insecure | default false | quote }}
-            - name: SCANNER_API_SERVER_ADDR
-              value: ":{{- .Values.trivy.service.port -}}"
+            {{- toYaml .Values.config | nindent 12 }}
             - name: "SCANNER_REDIS_URL"
               valueFrom:
                 secretKeyRef:
@@ -113,6 +53,8 @@ spec:
                 secretKeyRef:
                   name: {{ template "trivy.name" . }}
                   key: redisURL
+            - name: SCANNER_API_SERVER_ADDR
+              value: ":{{- .Values.trivy.service.port -}}"
           ports:
             - name: api-server
               containerPort: {{ .Values.trivy.service.port }}
@@ -136,12 +78,4 @@ spec:
             failureThreshold: 3
           resources:
 {{ toYaml .Values.trivy.resources | indent 12 }}
-      {{- if not .Values.reverseProxy.service.clusterIP }}
-          volumeMounts:
-            - mountPath: /mnt/tmp/
-              name: hosts
-      volumes:
-        - name: hosts
-          emptyDir: {}
-      {{- end }}
 {{- end }}
