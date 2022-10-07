@@ -57,12 +57,10 @@ trivy:
     
 
 redis:
-  type: internal
-  internal:
-    automountServiceAccountToken: false
-    image:
-      repository: goharbor/redis-photon
-      tag: v2.6.0
+  automountServiceAccountToken: false
+  image:
+    repository: goharbor/redis-photon
+    tag: v2.6.0
 
 persistence:
   enabled: false

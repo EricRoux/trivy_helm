@@ -1,4 +1,3 @@
-{{- if eq .Values.redis.type "internal" -}}
 apiVersion: v1
 kind: Service
 metadata:
@@ -12,4 +11,3 @@ spec:
   selector:
 {{ include "trivy.matchLabels" . | indent 4 }}
     component: redis
-{{- end -}}

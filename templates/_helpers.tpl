@@ -53,12 +53,3 @@ app: "{{ template "trivy.name" . }}"
 release: {{ .Release.Name }}
 app: "{{ template "trivy.name" . }}"
 {{- end -}}
-
-{{/* trivy component container port */}}
-{{- define "harbor.trivy.containerPort" -}}
-  {{- if .Values.internalTLS.enabled -}}
-    {{- printf "8443" -}}
-  {{- else -}}
-    {{- printf "8080" -}}
-  {{- end -}}
-{{- end -}}

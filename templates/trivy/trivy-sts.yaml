@@ -37,7 +37,10 @@ spec:
             privileged: false
             allowPrivilegeEscalation: false
           env:
-            {{- toYaml .Values.config | nindent 12 }}
+            {{- range .Values.config }}
+            - name: {{ .name }}
+              value: {{ .value | quote }}
+            {{- end }}
             - name: "SCANNER_REDIS_URL"
               valueFrom:
                 secretKeyRef:
