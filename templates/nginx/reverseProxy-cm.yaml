@@ -26,8 +26,8 @@ data:
       }
 
       location /health {
-        alias  /usr/share/nginx/html;
-        index  index.html index.htm;
+        return 200 'alive';
+        add_header Content-Type text/plain;
         access_log off;
       }
 
